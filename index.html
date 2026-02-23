@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>ALF Decisioning Toolkit</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { font-size: 16px; -webkit-font-smoothing: antialiased; }
+  body {
+    font-family: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: #0D0F11;
+    color: rgba(255,255,255,0.85);
+    min-height: 100vh;
+  }
+  .mono { font-family: 'IBM Plex Mono', monospace; }
+  .container { max-width: 780px; margin: 0 auto; padding: 32px 20px; }
+  
+  .tag-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    font-weight: 600;
+  }
+  
+  textarea {
+    width: 100%;
+    padding: 14px 16px;
+    border-radius: 10px;
+    border: 1px solid rgba(255,255,255,0.08);
+    background: rgba(255,255,255,0.03);
+    color: rgba(255,255,255,0.85);
+    font-size: 14px;
+    line-height: 1.5;
+    font-family: inherit;
+    resize: vertical;
+    outline: none;
+    transition: border-color 0.2s ease;
+  }
+  textarea:focus { border-color: rgba(194,136,58,0.4); }
+  textarea::placeholder { color: rgba(255,255,255,0.2); }
+  
+  .card {
+    padding: 24px;
+    background: rgba(255,255,255,0.02);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 12px;
+    margin-bottom: 16px;
+  }
+  
+  .btn {
+    padding: 14px 20px;
+    border-radius: 10px;
+    border: none;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: 'IBM Plex Mono', monospace;
+    transition: all 0.3s ease;
+  }
+  .btn-primary {
+    width: 100%;
+    padding: 16px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+  .btn-primary.active {
+    background: linear-gradient(135deg, #C2883A, #D4A04A);
+    color: #0D0F11;
+  }
+  .btn-primary.disabled {
+    background: rgba(255,255,255,0.06);
+    color: rgba(255,255,255,0.2);
+    cursor: not-allowed;
+  }
+  .btn-back {
+    border: 1px solid rgba(255,255,255,0.1);
+    background: transparent;
+    color: rgba(255,255,255,0.5);
+  }
+  .btn-secondary {
+    background: rgba(255,255,255,0.08);
+    color: rgba(255,255,255,0.7);
+  }
+  
+  .rating-btn {
+    padding: 6px 14px;
+    border-radius: 6px;
+    border: 2px solid rgba(255,255,255,0.08);
+    background: rgba(255,255,255,0.03);
+    color: rgba(255,255,255,0.5);
+    cursor: pointer;
+    font-size: 13px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-weight: 400;
+    transition: all 0.2s ease;
+    letter-spacing: 0.02em;
+  }
+  .rating-btn.selected {
+    font-weight: 600;
+  }
+  
+  .dim-tab {
+    flex: 1 1 auto;
+    min-width: 100px;
+    padding: 10px 8px;
+    border-radius: 8px;
+    border: 2px solid rgba(255,255,255,0.06);
+    background: rgba(255,255,255,0.02);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-align: center;
+  }
+  
+  .bar-track {
+    height: 8px;
+    background: rgba(255,255,255,0.06);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .bar-fill {
+    height: 100%;
+    border-radius: 4px;
+    transition: width 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  }
+  
+  .section-toggle {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 20px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 10px;
+    cursor: pointer;
+    margin-bottom: 0;
+  }
+  .section-toggle.open { margin-bottom: 12px; }
+  
+  .check-item {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    padding: 12px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    border: 1px solid rgba(255,255,255,0.04);
+    transition: all 0.2s ease;
+  }
+  .check-item input[type="checkbox"] {
+    margin-top: 3px;
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+  }
+  
+  .dim-tag {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 600;
+    font-family: 'IBM Plex Mono', monospace;
+    margin-right: 6px;
+  }
+  
+  .strategy-item {
+    font-size: 14px;
+    color: rgba(255,255,255,0.65);
+    margin-bottom: 4px;
+    padding-left: 12px;
+    line-height: 1.5;
+    border-left: 2px solid;
+  }
+  
+  @media (max-width: 600px) {
+    .container { padding: 20px 14px; }
+    .dim-tab { min-width: 70px; padding: 8px 4px; }
+    .dim-tab .mono { font-size: 9px !important; }
+  }
+</style>
+</head>
+<body>
+<div class="container" id="app"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.9/babel.min.js"></script>
+
+<script type="text/babel">
+const { useState, useRef, useEffect } = React;
+
+const STEPS = ["Performance Reality", "Dimensional Diagnosis", "Results & Recommendations"];
+
+const DIMENSIONS = [
+  {
+    id: "associative", name: "Associative", subtitle: "Behavioral / Automatic", color: "#C05746",
+    questions: [
+      { q: "Must the learner execute procedures or steps automatically, without conscious deliberation?", weight: 3 },
+      { q: "Is performance under time pressure, stress, or cognitive load a key requirement?", weight: 2 },
+      { q: "Does the task involve repetitive actions that must become habitual or reflexive?", weight: 2 },
+      { q: "Is compliance with exact procedures critical to safety, accuracy, or regulation?", weight: 3 },
+      { q: "Would failure to perform the correct response instantly create significant risk?", weight: 2 },
+    ],
+  },
+  {
+    id: "cognitive", name: "Cognitive", subtitle: "Knowledge / Mental Models", color: "#2D7D9A",
+    questions: [
+      { q: "Must the learner build organized mental models or schemas to understand how a system works?", weight: 3 },
+      { q: "Is the primary gap a lack of factual, conceptual, or procedural knowledge?", weight: 3 },
+      { q: "Does the learner need to recall, classify, or explain information accurately?", weight: 2 },
+      { q: "Is there a defined body of knowledge that must be mastered before performance is possible?", weight: 2 },
+      { q: "Does the task require applying known rules or principles to familiar types of problems?", weight: 2 },
+    ],
+  },
+  {
+    id: "constructive", name: "Constructive", subtitle: "Meaning-Making / Judgment", color: "#5E8C3E",
+    questions: [
+      { q: "Must the learner make judgments in ambiguous or ill-structured situations?", weight: 3 },
+      { q: "Does the task require adapting approaches based on unique contextual factors?", weight: 3 },
+      { q: "Is the learner expected to construct personal meaning, not just absorb information?", weight: 2 },
+      { q: "Does success require perspective-taking, critical evaluation, or creative synthesis?", weight: 2 },
+      { q: "Would the learner need to transfer learning to novel situations significantly different from training?", weight: 2 },
+    ],
+  },
+  {
+    id: "social", name: "Social-Ecological", subtitle: "Identity / Community", color: "#8B5DAA",
+    questions: [
+      { q: "Is the performance embedded in team dynamics, organizational culture, or professional identity?", weight: 3 },
+      { q: "Must the learner adopt new professional behaviors, norms, or ways of being — not just new skills?", weight: 3 },
+      { q: "Does success depend on relationships, collaboration, or social negotiation?", weight: 2 },
+      { q: "Would a change in organizational environment or culture significantly impact learning transfer?", weight: 2 },
+      { q: "Is mentoring, coaching, or learning from experienced practitioners central to developing this capability?", weight: 2 },
+    ],
+  },
+  {
+    id: "networked", name: "Networked", subtitle: "Connected / Navigational", color: "#C2883A",
+    questions: [
+      { q: "Does the knowledge domain change rapidly enough that memorized content becomes outdated?", weight: 3 },
+      { q: "Must the learner locate, evaluate, and synthesize information from multiple distributed sources?", weight: 2 },
+      { q: "Is the ability to use tools, AI, databases, or reference systems part of the core performance?", weight: 3 },
+      { q: "Is knowing where to find information as important as — or more important than — retaining it?", weight: 2 },
+      { q: "Does the role require continuous self-directed learning and curation of evolving knowledge?", weight: 2 },
+    ],
+  },
+];
+
+const RATINGS = [
+  { value: 0, label: "Not Relevant" },
+  { value: 1, label: "Somewhat" },
+  { value: 2, label: "Significant" },
+  { value: 3, label: "Critical" },
+];
+
+const MODELS = {
+  associative: {
+    primary: ["Gagné's Nine Events of Instruction", "Deliberate Practice Protocols", "Spaced Repetition Systems"],
+    bloom: "Remember → Apply",
+    delivery: ["Drill-and-practice exercises", "Simulation with repetition", "Microlearning for reinforcement", "Spaced retrieval quizzes", "Job aids and checklists"],
+    process: "ADDIE — stable content, clear procedures, scalable deployment",
+    seventwoten: "10% formal training for initial skill building; 70% on-the-job repetition to build automaticity",
+  },
+  cognitive: {
+    primary: ["Gagné's Nine Events of Instruction", "Advance Organizers (Ausubel)", "Cognitive Load Management (Sweller)"],
+    bloom: "Remember → Analyze",
+    delivery: ["Structured e-learning with worked examples", "Concept mapping and schema-building activities", "Chunked content with progressive complexity", "Microlearning for knowledge building (within macro-architecture)", "Visual models and dual-coded materials"],
+    process: "ADDIE or Backward Design — well-defined knowledge domain, clear outcome targets",
+    seventwoten: "10% formal for knowledge foundations; 20% social for collaborative sense-making",
+  },
+  constructive: {
+    primary: ["Kolb's Experiential Learning Cycle", "Case-Based Reasoning", "Problem-Based Learning"],
+    bloom: "Analyze → Create",
+    delivery: ["Scenario-based simulations", "Structured reflection and debrief protocols", "Project-based authentic tasks", "Socratic dialogue and guided discovery", "Portfolio development with self-assessment"],
+    process: "SAM — ambiguous problem space, solution emerges through iteration",
+    seventwoten: "70% structured experiential assignments; 20% mentoring and coaching; 10% foundational models and frameworks",
+  },
+  social: {
+    primary: ["Communities of Practice (Wenger)", "Legitimate Peripheral Participation (Lave & Wenger)", "Social Learning / Modeling (Bandura)"],
+    bloom: "Apply → Evaluate (socially situated)",
+    delivery: ["Mentoring and apprenticeship programs", "Peer observation and structured feedback", "Collaborative projects with shared accountability", "Community forums and practice networks", "Graduated responsibility in authentic contexts"],
+    process: "Action Mapping + SAM hybrid — performance-focused, iterative, socially embedded",
+    seventwoten: "20% is the primary design target; 70% structured to include social components; 10% for shared frameworks and language",
+  },
+  networked: {
+    primary: ["Connectivist Strategies (Siemens)", "Performance Support Systems (Gery)", "Personal Knowledge Management"],
+    bloom: "Evaluate → Create (distributed)",
+    delivery: ["Curated resource networks and knowledge bases", "Just-in-time microlearning and job aids", "Search-and-apply exercises", "AI-augmented performance tools", "Self-directed learning pathways with curation"],
+    process: "Agile / SAM — content evolves rapidly, requires continuous updating",
+    seventwoten: "70% workflow-embedded tools and resources; 20% knowledge-sharing networks; 10% foundational digital literacy",
+  },
+};
+
+const MERRILL = [
+  { principle: "Problem-Centered", question: "Is the learning anchored in a real-world problem the learner recognizes as meaningful?" },
+  { principle: "Activation", question: "Does the design activate the learner's relevant prior knowledge and experience before introducing new content?" },
+  { principle: "Demonstration", question: "Does the design show the learner what the target performance looks like — not just tell them about it?" },
+  { principle: "Application", question: "Does the design require the learner to practice with coaching and corrective feedback?" },
+  { principle: "Integration", question: "Does the design help the learner integrate new capability into their real context through reflection, discussion, or defense?" },
+];
+
+const ARCS = [
+  { element: "Attention", question: "Does the design capture and sustain learner engagement through novelty, inquiry, or variability?" },
+  { element: "Relevance", question: "Does the design connect to what the learner actually values — their goals, identity, or felt needs?" },
+  { element: "Confidence", question: "Does the design build progressive self-efficacy with clear expectations and attainable early wins?" },
+  { element: "Satisfaction", question: "Does the design deliver intrinsic or extrinsic confirmation that the learning effort was worthwhile?" },
+];
+
+function getRecommendations(scores) {
+  const sorted = Object.entries(scores).sort((a, b) => b[1] - a[1]);
+  const maxScore = sorted[0][1];
+  const threshold = maxScore * 0.6;
+  const primary = sorted.filter(([, s]) => s >= threshold).map(([id]) => id);
+  const secondary = sorted.filter(([, s]) => s > 0 && s < threshold).map(([id]) => id);
+  return { sorted, primary, secondary };
+}
+
+function App() {
+  const [step, setStep] = useState(0);
+  const [context, setContext] = useState({ role: "", task: "", gap: "", stakes: "", constraints: "" });
+  const [answers, setAnswers] = useState({});
+  const [activeDim, setActiveDim] = useState(0);
+  const [merrillChecks, setMerrillChecks] = useState({});
+  const [arcsChecks, setArcsChecks] = useState({});
+  const [expanded, setExpanded] = useState({});
+  const topRef = useRef(null);
+
+  useEffect(() => {
+    if (topRef.current) topRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
+  }, [step, activeDim]);
+
+  const setAnswer = (dimId, qIdx, val) => setAnswers(prev => ({ ...prev, [`${dimId}-${qIdx}`]: val }));
+
+  const getScores = () => {
+    const scores = {}, maxScores = {};
+    DIMENSIONS.forEach(dim => {
+      let score = 0, max = 0;
+      dim.questions.forEach((q, i) => {
+        score += (answers[`${dim.id}-${i}`] || 0) * q.weight;
+        max += 3 * q.weight;
+      });
+      scores[dim.id] = score;
+      maxScores[dim.id] = max;
+    });
+    return { scores, maxScores };
+  };
+
+  const allAnswered = () => {
+    let count = 0;
+    DIMENSIONS.forEach(dim => dim.questions.forEach((_, i) => { if (answers[`${dim.id}-${i}`] !== undefined) count++; }));
+    return count === DIMENSIONS.reduce((a, d) => a + d.questions.length, 0);
+  };
+
+  const contextFilled = context.role.trim() && context.task.trim() && context.gap.trim();
+  const { scores, maxScores } = getScores();
+  const recs = getRecommendations(scores);
+  const toggle = key => setExpanded(prev => ({ ...prev, [key]: !prev[key] }));
+
+  const DimBar = ({ name, score, max, color }) => (
+    <div style={{ marginBottom: 10 }}>
+      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
+        <span className="mono" style={{ fontSize: 12, color, fontWeight: 600, letterSpacing: "0.05em", textTransform: "uppercase" }}>{name}</span>
+        <span className="mono" style={{ fontSize: 12, color: "rgba(255,255,255,0.4)" }}>{score} / {max}</span>
+      </div>
+      <div className="bar-track">
+        <div className="bar-fill" style={{ width: `${max > 0 ? (score/max)*100 : 0}%`, background: `linear-gradient(90deg, ${color}88, ${color})` }} />
+      </div>
+    </div>
+  );
+
+  const SectionHeader = ({ title, sectionKey, color = "#C2883A" }) => (
+    <button className={`section-toggle ${expanded[sectionKey] ? 'open' : ''}`} onClick={() => toggle(sectionKey)}>
+      <span className="tag-label" style={{ color }}>{title}</span>
+      <span style={{ color: "rgba(255,255,255,0.3)", fontSize: 18 }}>{expanded[sectionKey] ? "−" : "+"}</span>
+    </button>
+  );
+
+  return (
+    <div>
+      <div ref={topRef} />
+
+      {/* Header */}
+      <div style={{ marginBottom: 40 }}>
+        <div className="tag-label" style={{ color: "#C2883A", marginBottom: 8, letterSpacing: "0.2em" }}>Adaptive Learning Framework</div>
+        <h1 style={{ fontSize: 28, fontWeight: 700, lineHeight: 1.2, color: "rgba(255,255,255,0.95)" }}>Decisioning Toolkit</h1>
+        <p style={{ color: "rgba(255,255,255,0.4)", fontSize: 15, marginTop: 8, lineHeight: 1.5 }}>
+          Diagnose the dimensional profile of a learning challenge and receive targeted model, delivery, and process recommendations.
+        </p>
+      </div>
+
+      {/* Steps */}
+      <div style={{ display: "flex", gap: 4, marginBottom: 36 }}>
+        {STEPS.map((s, i) => (
+          <div key={i} style={{ flex: 1 }}>
+            <div style={{ height: 3, borderRadius: 2, background: i <= step ? "linear-gradient(90deg, #C2883A, #D4A04A)" : "rgba(255,255,255,0.08)", transition: "background 0.4s ease", marginBottom: 8 }} />
+            <div className="mono" style={{ fontSize: 10, letterSpacing: "0.08em", textTransform: "uppercase", color: i <= step ? "rgba(255,255,255,0.6)" : "rgba(255,255,255,0.2)", fontWeight: i === step ? 600 : 400 }}>{s}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* STEP 0: Performance Reality */}
+      {step === 0 && (
+        <div>
+          <div className="card" style={{ marginBottom: 20 }}>
+            <div className="tag-label" style={{ color: "#C2883A", marginBottom: 6 }}>Ground Rule</div>
+            <p style={{ fontSize: 14, color: "rgba(255,255,255,0.55)", lineHeight: 1.6 }}>
+              Before selecting any theory, model, or solution — describe the performance reality. What does success actually look like in context? These inputs anchor the entire diagnostic.
+            </p>
+          </div>
+
+          {[
+            { key: "role", label: "Who is the learner?", placeholder: "Role, experience level, current capability, relevant context..." },
+            { key: "task", label: "What must they be able to do?", placeholder: "Describe the target performance as it looks in the real environment..." },
+            { key: "gap", label: "What is the current gap?", placeholder: "What is happening now vs. what should be happening? Be specific..." },
+            { key: "stakes", label: "What are the stakes?", placeholder: "What happens if the gap persists? What improves if it closes?", optional: true },
+            { key: "constraints", label: "What are the constraints?", placeholder: "Timeline, budget, technology, stakeholder dynamics, learner availability...", optional: true },
+          ].map(f => (
+            <div key={f.key} style={{ marginBottom: 20 }}>
+              <label style={{ display: "block", fontSize: 14, fontWeight: 600, marginBottom: 8, color: "rgba(255,255,255,0.8)" }}>
+                {f.label}
+                {f.optional && <span style={{ fontWeight: 400, color: "rgba(255,255,255,0.3)", fontSize: 12, marginLeft: 8 }}>Optional</span>}
+              </label>
+              <textarea value={context[f.key]} onChange={e => setContext(prev => ({ ...prev, [f.key]: e.target.value }))} placeholder={f.placeholder} rows={3} />
+            </div>
+          ))}
+
+          <button className={`btn btn-primary ${contextFilled ? 'active' : 'disabled'}`} onClick={() => contextFilled && setStep(1)} disabled={!contextFilled}>
+            Proceed to Dimensional Diagnosis →
+          </button>
+        </div>
+      )}
+
+      {/* STEP 1: Dimensional Diagnosis */}
+      {step === 1 && (() => {
+        const dim = DIMENSIONS[activeDim];
+        return (
+          <div>
+            {/* Tabs */}
+            <div style={{ display: "flex", gap: 4, marginBottom: 24, flexWrap: "wrap" }}>
+              {DIMENSIONS.map((d, i) => {
+                const done = d.questions.every((_, qi) => answers[`${d.id}-${qi}`] !== undefined);
+                const active = activeDim === i;
+                return (
+                  <button key={d.id} className="dim-tab" onClick={() => setActiveDim(i)}
+                    style={{ borderColor: active ? d.color : undefined, background: active ? `${d.color}15` : undefined }}>
+                    <div className="mono" style={{ fontSize: 11, fontWeight: 700, color: active ? d.color : "rgba(255,255,255,0.4)", letterSpacing: "0.05em" }}>{d.name}</div>
+                    {done && <div style={{ fontSize: 10, color: d.color, marginTop: 2 }}>✓</div>}
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Questions */}
+            <div className="card" style={{ borderColor: `${dim.color}33`, marginBottom: 20 }}>
+              <div style={{ marginBottom: 20 }}>
+                <h3 style={{ fontSize: 20, fontWeight: 700, color: dim.color }}>{dim.name}</h3>
+                <div className="mono" style={{ fontSize: 13, color: "rgba(255,255,255,0.4)", marginTop: 2 }}>{dim.subtitle}</div>
+              </div>
+              {dim.questions.map((q, qi) => (
+                <div key={qi} style={{ marginBottom: qi < dim.questions.length - 1 ? 20 : 0, paddingBottom: qi < dim.questions.length - 1 ? 20 : 0, borderBottom: qi < dim.questions.length - 1 ? "1px solid rgba(255,255,255,0.05)" : "none" }}>
+                  <p style={{ fontSize: 14, lineHeight: 1.5, color: "rgba(255,255,255,0.75)", marginBottom: 10 }}>
+                    {q.q}
+                    <span className="mono" style={{ fontSize: 10, color: "rgba(255,255,255,0.25)", marginLeft: 8 }}>×{q.weight}</span>
+                  </p>
+                  <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                    {RATINGS.map(r => {
+                      const sel = answers[`${dim.id}-${qi}`] === r.value;
+                      return (
+                        <button key={r.value} className={`rating-btn ${sel ? 'selected' : ''}`}
+                          onClick={() => setAnswer(dim.id, qi, r.value)}
+                          style={sel ? { borderColor: dim.color, background: `${dim.color}22`, color: dim.color } : {}}>
+                          {r.label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Live scores */}
+            <div className="card" style={{ marginBottom: 20 }}>
+              <div className="tag-label" style={{ color: "rgba(255,255,255,0.35)", marginBottom: 14 }}>Dimensional Profile (Live)</div>
+              {DIMENSIONS.map(d => <DimBar key={d.id} name={d.name} score={scores[d.id]} max={maxScores[d.id]} color={d.color} />)}
+            </div>
+
+            {/* Nav */}
+            <div style={{ display: "flex", gap: 12 }}>
+              <button className="btn btn-back" style={{ flex: 1 }} onClick={() => setStep(0)}>← Back</button>
+              {activeDim < DIMENSIONS.length - 1 ? (
+                <button className="btn btn-secondary" style={{ flex: 2 }} onClick={() => setActiveDim(activeDim + 1)}>Next Dimension →</button>
+              ) : (
+                <button className={`btn btn-primary ${allAnswered() ? 'active' : 'disabled'}`} style={{ flex: 2 }}
+                  onClick={() => { if (allAnswered()) { setExpanded({ primary: true, process: true, delivery: true, merrill: true, arcs: true }); setStep(2); } }}
+                  disabled={!allAnswered()}>
+                  Generate Recommendations →
+                </button>
+              )}
+            </div>
+          </div>
+        );
+      })()}
+
+      {/* STEP 2: Results */}
+      {step === 2 && (
+        <div>
+          {/* Context Summary */}
+          <div className="card" style={{ marginBottom: 24 }}>
+            <div className="tag-label" style={{ color: "rgba(255,255,255,0.35)", marginBottom: 10 }}>Performance Context</div>
+            <div style={{ fontSize: 14, color: "rgba(255,255,255,0.6)", lineHeight: 1.6 }}>
+              <strong style={{ color: "rgba(255,255,255,0.8)" }}>Learner:</strong> {context.role}<br/>
+              <strong style={{ color: "rgba(255,255,255,0.8)" }}>Target Performance:</strong> {context.task}<br/>
+              <strong style={{ color: "rgba(255,255,255,0.8)" }}>Current Gap:</strong> {context.gap}
+              {context.stakes && <><br/><strong style={{ color: "rgba(255,255,255,0.8)" }}>Stakes:</strong> {context.stakes}</>}
+              {context.constraints && <><br/><strong style={{ color: "rgba(255,255,255,0.8)" }}>Constraints:</strong> {context.constraints}</>}
+            </div>
+          </div>
+
+          {/* Dimensional Profile */}
+          <div className="card" style={{ marginBottom: 24 }}>
+            <div className="tag-label" style={{ color: "rgba(255,255,255,0.35)", marginBottom: 14 }}>Dimensional Profile</div>
+            {DIMENSIONS.map(d => <DimBar key={d.id} name={d.name} score={scores[d.id]} max={maxScores[d.id]} color={d.color} />)}
+            <div style={{ marginTop: 14, paddingTop: 14, borderTop: "1px solid rgba(255,255,255,0.06)" }}>
+              <span className="mono" style={{ fontSize: 11, color: "rgba(255,255,255,0.35)", letterSpacing: "0.05em" }}>PRIMARY: </span>
+              {recs.primary.map(id => {
+                const d = DIMENSIONS.find(x => x.id === id);
+                return <span key={id} className="dim-tag" style={{ background: `${d.color}22`, color: d.color }}>{d.name}</span>;
+              })}
+              {recs.secondary.length > 0 && (
+                <>
+                  <br/>
+                  <span className="mono" style={{ fontSize: 11, color: "rgba(255,255,255,0.25)", letterSpacing: "0.05em", marginTop: 6, display: "inline-block" }}>SECONDARY: </span>
+                  {recs.secondary.map(id => {
+                    const d = DIMENSIONS.find(x => x.id === id);
+                    return <span key={id} className="dim-tag" style={{ background: "rgba(255,255,255,0.04)", color: "rgba(255,255,255,0.4)" }}>{d.name}</span>;
+                  })}
+                </>
+              )}
+            </div>
+          </div>
+
+          {/* Recommended Models */}
+          <div style={{ marginBottom: 12 }}>
+            <SectionHeader title="Recommended Instructional Models" sectionKey="primary" color="#C2883A" />
+            {expanded.primary && (
+              <div style={{ display: "flex", flexDirection: "column", gap: 12, marginBottom: 12 }}>
+                {recs.primary.map(id => {
+                  const d = DIMENSIONS.find(x => x.id === id);
+                  const m = MODELS[id];
+                  return (
+                    <div key={id} style={{ padding: 20, background: `${d.color}08`, border: `1px solid ${d.color}25`, borderRadius: 10 }}>
+                      <div className="tag-label" style={{ color: d.color, letterSpacing: "0.1em", marginBottom: 12 }}>{d.name} Dimension</div>
+                      <div style={{ marginBottom: 12 }}>
+                        <div className="mono" style={{ fontSize: 11, color: "rgba(255,255,255,0.35)", letterSpacing: "0.05em", marginBottom: 6 }}>PRIMARY MODELS</div>
+                        {m.primary.map((model, i) => <div key={i} style={{ fontSize: 14, fontWeight: 600, color: "rgba(255,255,255,0.8)", marginBottom: 2 }}>• {model}</div>)}
+                      </div>
+                      <div style={{ marginBottom: 8 }}>
+                        <span className="mono" style={{ fontSize: 11, color: "rgba(255,255,255,0.35)" }}>BLOOM'S TARGET: </span>
+                        <span style={{ fontSize: 13, color: "rgba(255,255,255,0.65)" }}>{m.bloom}</span>
+                      </div>
+                      <div>
+                        <span className="mono" style={{ fontSize: 11, color: "rgba(255,255,255,0.35)" }}>70-20-10: </span>
+                        <span style={{ fontSize: 13, color: "rgba(255,255,255,0.55)", lineHeight: 1.5 }}>{m.seventwoten}</span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+
+          {/* Development Process */}
+          <div style={{ marginBottom: 12 }}>
+            <SectionHeader title="Development Process" sectionKey="process" color="#2D7D9A" />
+            {expanded.process && (
+              <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 12 }}>
+                {recs.primary.map(id => {
+                  const d = DIMENSIONS.find(x => x.id === id);
+                  const m = MODELS[id];
+                  return (
+                    <div key={id} style={{ padding: "16px 20px", background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 10 }}>
+                      <span className="mono" style={{ fontSize: 11, color: d.color, fontWeight: 600 }}>{d.name}: </span>
+                      <span style={{ fontSize: 14, color: "rgba(255,255,255,0.7)" }}>{m.process}</span>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+
+          {/* Delivery Strategies */}
+          <div style={{ marginBottom: 12 }}>
+            <SectionHeader title="Delivery Strategies" sectionKey="delivery" color="#5E8C3E" />
+            {expanded.delivery && (
+              <div style={{ display: "flex", flexDirection: "column", gap: 12, marginBottom: 12 }}>
+                {recs.primary.map(id => {
+                  const d = DIMENSIONS.find(x => x.id === id);
+                  const m = MODELS[id];
+                  return (
+                    <div key={id} style={{ padding: 20, background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 10 }}>
+                      <div className="tag-label" style={{ color: d.color, letterSpacing: "0.1em", marginBottom: 10 }}>{d.name} Strategies</div>
+                      {m.delivery.map((s, i) => <div key={i} className="strategy-item" style={{ borderLeftColor: `${d.color}40` }}>{s}</div>)}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+
+          {/* Merrill Audit */}
+          <div style={{ marginBottom: 12 }}>
+            <SectionHeader title="Merrill's First Principles Audit" sectionKey="merrill" color="#8B5DAA" />
+            {expanded.merrill && (
+              <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 12 }}>
+                {MERRILL.map((item, i) => (
+                  <label key={i} className="check-item" style={merrillChecks[i] ? { background: "#8B5DAA0a", borderColor: "#8B5DAA33" } : {}}>
+                    <input type="checkbox" checked={!!merrillChecks[i]} onChange={() => setMerrillChecks(p => ({ ...p, [i]: !p[i] }))} style={{ accentColor: "#8B5DAA" }} />
+                    <div>
+                      <div style={{ fontWeight: 600, fontSize: 14, color: "rgba(255,255,255,0.85)", lineHeight: 1.3 }}>{item.principle}</div>
+                      <div style={{ fontSize: 13, color: "rgba(255,255,255,0.45)", marginTop: 4, lineHeight: 1.4 }}>{item.question}</div>
+                    </div>
+                  </label>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* ARCS Audit */}
+          <div style={{ marginBottom: 24 }}>
+            <SectionHeader title="ARCS Motivational Audit" sectionKey="arcs" color="#C05746" />
+            {expanded.arcs && (
+              <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 12 }}>
+                {ARCS.map((item, i) => (
+                  <label key={i} className="check-item" style={arcsChecks[i] ? { background: "#C057460a", borderColor: "#C0574633" } : {}}>
+                    <input type="checkbox" checked={!!arcsChecks[i]} onChange={() => setArcsChecks(p => ({ ...p, [i]: !p[i] }))} style={{ accentColor: "#C05746" }} />
+                    <div>
+                      <div style={{ fontWeight: 600, fontSize: 14, color: "rgba(255,255,255,0.85)", lineHeight: 1.3 }}>{item.element}</div>
+                      <div style={{ fontSize: 13, color: "rgba(255,255,255,0.45)", marginTop: 4, lineHeight: 1.4 }}>{item.question}</div>
+                    </div>
+                  </label>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Nav */}
+          <div style={{ display: "flex", gap: 12 }}>
+            <button className="btn btn-back" style={{ flex: 1 }} onClick={() => setStep(1)}>← Revise Diagnosis</button>
+            <button className="btn btn-secondary" style={{ flex: 1 }} onClick={() => {
+              setStep(0); setContext({ role: "", task: "", gap: "", stakes: "", constraints: "" });
+              setAnswers({}); setActiveDim(0); setMerrillChecks({}); setArcsChecks({}); setExpanded({});
+            }}>Start New Diagnosis</button>
+          </div>
+
+          {/* Footer */}
+          <div style={{ marginTop: 40, paddingTop: 20, borderTop: "1px solid rgba(255,255,255,0.06)", textAlign: "center" }}>
+            <div className="mono" style={{ fontSize: 10, letterSpacing: "0.15em", textTransform: "uppercase", color: "rgba(255,255,255,0.2)" }}>
+              Adaptive Learning Framework — Decisioning Toolkit v1.0
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("app")).render(<App />);
+</script>
+</body>
+</html>
